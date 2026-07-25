@@ -55,6 +55,61 @@ if ($page_links):
 <script src="//<?php if ($this->options->cjCDN == 'cf'): ?>cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/highlight.min.js<?php elseif ($this->options->cjCDN == 'sc'): ?>cdn.staticfile.org/highlight.js/10.2.0/highlight.min.js<?php else: ?>cdn.jsdelivr.net/gh/highlightjs/cdn-release@10.2.0/build/highlight.min.js<?php endif; ?>"></script>
 <?php endif;?><?php if($this->options->LazyLoad):?><!--懒加载库-按需加载--><script>(()=>{document.addEventListener('DOMContentLoaded',()=>{if(document.querySelector('img.lazyload')){let s=document.createElement('script');s.src='<?= $this->options->cjCDN=="cf"?"//cdnjs.cloudflare.com/ajax/libs/lazysizes/5.3.2/lazysizes.min.js":($this->options->cjCDN=="sc"?"//cdn.staticfile.org/lazysizes/5.3.2/lazysizes.min.js":"//cdn.jsdelivr.net/npm/lazysizes@5.3.2/lazysizes.min.js") ?>';s.async=true;document.head.appendChild(s)}})})();<?php endif;?></script>
 <script src="<?php cjUrl('main.min.js') ?>"></script>
+<script>
+// Replace the legacy back-to-top loop with an interruptible animation.
+(function () {
+  var topButton = document.getElementById('top');
+  var animationFrame = null;
+
+  if (!topButton) return;
+
+  function getScrollTop() {
+    return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+  }
+
+  function stopAnimation() {
+    if (animationFrame !== null) {
+      window.cancelAnimationFrame(animationFrame);
+      animationFrame = null;
+    }
+  }
+
+  function scrollToTop(event) {
+    if (event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+
+    stopAnimation();
+
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      window.scrollTo(0, 0);
+      return;
+    }
+
+    function step() {
+      var currentTop = getScrollTop();
+
+      if (currentTop <= 1) {
+        window.scrollTo(0, 0);
+        animationFrame = null;
+        return;
+      }
+
+      window.scrollTo(0, Math.max(0, currentTop - Math.ceil(currentTop / 5)));
+      animationFrame = window.requestAnimationFrame(step);
+    }
+
+    animationFrame = window.requestAnimationFrame(step);
+  }
+
+  topButton.addEventListener('click', scrollToTop, true);
+  window.addEventListener('wheel', stopAnimation, { passive: true });
+  window.addEventListener('touchstart', stopAnimation, { passive: true });
+  window.addEventListener('pointerdown', stopAnimation, { passive: true });
+  window.addEventListener('keydown', stopAnimation);
+})();
+</script>
 <?php $this->footer(); ?>
 <?php if ($this->options->CustomContent): $this->options->CustomContent(); ?>
 <?php endif; ?>
